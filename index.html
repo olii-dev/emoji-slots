@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Emoji Slots</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+    body {
+      font-family: 'Orbitron', monospace, Arial, sans-serif;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: #fff;
+      user-select: none;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 10px #ffcc00;
+      text-align: center;
+      width: 100%;
+    }
+
+    .game-container {
+      display: flex;
+      gap: 1.5rem;
+      max-width: 960px;
+      width: 100%;
+      justify-content: center;
+      align-items: flex-start;
+      flex-wrap: nowrap;  /* Change from wrap to nowrap */
+    }
+
+    /* Stats and Odds panels */
+    .panel {
+      background: #121212dd;
+      border-radius: 20px;
+      padding: 1.5rem 1.2rem;
+      box-shadow: 0 0 30px #ffcc00aa;
+      width: 220px;
+      font-size: 1.1rem;
+      line-height: 1.5;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .panel h2 {
+      font-size: 1.6rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      text-align: center;
+      text-shadow: 0 0 8px #ffcc00;
+    }
+
+    /* Slot machine styling */
+    .slot-machine {
+      background: #121212dd;
+      border-radius: 20px;
+      padding: 2rem 2rem 2.5rem;
+      box-shadow: 0 0 30px #ffcc00aa;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 320px;
+      user-select: none;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
+    }
+
+    .reels {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .reel {
+      width: 90px;
+      height: 90px;
+      background: #222;
+      border-radius: 15px;
+      box-shadow: inset 0 0 15px #000;
+      font-size: 5rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+
+    .reel.spin {
+      animation: spinAnim 0.3s linear infinite;
+    }
+
+    @keyframes spinAnim {
+      0% { transform: rotateX(0);}
+      100% { transform: rotateX(360deg);}
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.7rem;
+      flex-wrap: wrap;
+    }
+
+    label {
+      font-weight: bold;
+      font-size: 1.2rem;
+      margin-right: 0.5rem;
+    }
+
+    select {
+      font-size: 1.1rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 7px;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ffcc00;
+      background: #333;
+      color: #fff;
+      transition: box-shadow 0.3s;
+    }
+
+    select:hover {
+      box-shadow: 0 0 15px #ffdb4d;
+    }
+
+    button {
+      background: #ffcc00;
+      border: none;
+      color: #222;
+      font-weight: 700;
+      font-size: 1.3rem;
+      padding: 0.9rem 2.5rem;
+      border-radius: 15px;
+      cursor: pointer;
+      box-shadow: 0 0 25px #ffcc00;
+      transition: background 0.3s, box-shadow 0.3s;
+      user-select: none;
+    }
+
+    button:disabled {
+      background: #999;
+      box-shadow: none;
+      cursor: not-allowed;
+      color: #555;
+    }
+
+    button:hover:not(:disabled) {
+      background: #e6b800;
+      box-shadow: 0 0 35px #ffdb4d;
+    }
+
+.result-info {
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: 0 0 5px #000;
+  margin-bottom: 0.7rem;
+  text-align: center;
+  color: #ffeb3b;
+  user-select: none;
+  white-space: normal;    /* allow wrapping */
+  line-height: 1.4em;
+  max-height: 4.2em;      /* ~3 lines */
+  overflow: hidden;       /* hide overflow beyond 3 lines */
+  word-break: break-word;
+}
+
+    .result-info.fade-out {
+      opacity: 0;
+    }
+
+    .coins {
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+      color: #ffeb3b;
+      text-shadow: 0 0 10px #ffeb3b;
+      user-select: none;
+      text-align: center;
+    }
+
+    /* Confetti container */
+    #confetti-container {
+      pointer-events: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow: visible;
+      z-index: 9999;
+    }
+
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      background-color: #ffcc00;
+      opacity: 0.9;
+      border-radius: 50%;
+      animation: confetti-fall 3s linear forwards;
+      will-change: transform, opacity;
+    }
+
+    .confetti:nth-child(2n) {
+      background-color: #ffd633;
+      width: 12px;
+      height: 12px;
+    }
+
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 900px) {
+      .game-container {
+        flex-direction: column;
+        align-items: center;
+        flex-wrap: wrap;  /* Allow wrapping in mobile view */
+      }
+      .panel {
+        width: 90%;
+        max-width: 320px;
+        margin-bottom: 1rem;
+      }
+      .slot-machine {
+        min-width: 90%;
+        max-width: 360px;
+        order: -1;  /* Make slot machine appear first on mobile */
+      }
+      #statsPanel {
+        order: 0;  /* Place stats panel second on mobile */
+      }
+      #oddsPanel {
+        order: 1;  /* Place odds panel last on mobile */
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>🎰 Emoji Slots 🎰</h1>
+
+  <div class="game-container">
+    <!-- Statistics Panel -->
+    <div class="panel" id="statsPanel" aria-label="Game Statistics">
+      <h2>📊 Statistics</h2>
+      <p><strong>Total Spins:</strong> <span id="totalSpins">0</span></p>
+      <p><strong>Total Wins:</strong> <span id="totalWins">0</span></p>
+      <p><strong>Biggest Win:</strong> <span id="biggestWin">0</span> coins</p>
+      <p><strong>Total Coins Won:</strong> <span id="totalCoinsWon">0</span></p>
+      <p><strong>Total Coins Lost:</strong> <span id="totalCoinsLost">0</span></p>
+      <p><strong>Current Streak:</strong> <span id="currentStreak">0</span></p>
+      <p><strong>Max Streak:</strong> <span id="maxStreak">0</span></p>
+    </div>
+
+    <!-- Slot Machine -->
+    <div class="slot-machine" role="main" aria-label="Emoji Slot Machine Game">
+      <div class="reels" aria-live="polite" aria-atomic="true" aria-relevant="text">
+        <div class="reel" id="reel1" aria-label="Reel 1">❓</div>
+        <div class="reel" id="reel2" aria-label="Reel 2">❓</div>
+        <div class="reel" id="reel3" aria-label="Reel 3">❓</div>
+      </div>
+
+      <div class="result-info" id="resultInfo" aria-live="polite" aria-atomic="true"></div>
+
+      <div class="coins" id="coinsInfo" aria-live="polite" aria-atomic="true">Coins: 100</div>
+
+      <div class="controls">
+        <label for="bet">Bet:</label>
+        <select id="bet" aria-label="Select bet amount">
+          <option value="1">1 coin</option>
+          <option value="2">2 coins</option>
+          <option value="5">5 coins</option>
+          <option value="10">10 coins</option>
+          <option value="25">25 coins</option>
+          <option value="50">50 coins</option>
+        </select>
+        <button id="spinBtn" aria-live="polite" aria-atomic="true">Spin</button>
+      </div>
+    </div>
+
+    <!-- Winning Odds Panel -->
+    <div class="panel" id="oddsPanel" aria-label="Winning Odds Information">
+      <h2>🎯 Winning Odds</h2>
+      <ul style="list-style: none; padding-left: 0;">
+        <li>⭐ 3 Stars (Jackpot): <strong>15× Bet</strong></li>
+        <li>🍒 / 💎 / 🍀 / 🔔 3 of a kind: <strong>8× Bet</strong></li>
+        <li>2 same + 1 ⭐ Star: <strong>4× Bet</strong></li>
+        <li>2 matching emojis: <strong>2× Bet</strong></li>
+        <li>Other combos: <strong>No win</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div id="confetti-container"></div>
+
+  <script>
+    const emojis = ['🍒', '💎', '🍀', '⭐', '🍉', '🔔', '🐱'];
+
+    // Load coins and bet from localStorage or defaults
+    let coins = parseInt(localStorage.getItem('coins')) || 100;
+    const betSelect = document.getElementById('bet');
+    const savedBet = localStorage.getItem('bet');
+    if (savedBet && [...betSelect.options].some(opt => opt.value === savedBet)) {
+      betSelect.value = savedBet;
+    }
+
+    const reelElements = [
+      document.getElementById('reel1'),
+      document.getElementById('reel2'),
+      document.getElementById('reel3'),
+    ];
+
+    const coinsInfo = document.getElementById('coinsInfo');
+    const resultInfo = document.getElementById('resultInfo');
+    const spinBtn = document.getElementById('spinBtn');
+
+    // Statistics elements
+    const totalSpinsEl = document.getElementById('totalSpins');
+    const totalWinsEl = document.getElementById('totalWins');
+    const biggestWinEl = document.getElementById('biggestWin');
+    const totalCoinsWonEl = document.getElementById('totalCoinsWon');
+    const totalCoinsLostEl = document.getElementById('totalCoinsLost');
+    const currentStreakEl = document.getElementById('currentStreak');
+    const maxStreakEl = document.getElementById('maxStreak');
+
+    // Load statistics from localStorage or initialize
+    let stats = JSON.parse(localStorage.getItem('stats')) || {
+      totalSpins: 0,
+      totalWins: 0,
+      biggestWin: 0,
+      totalCoinsWon: 0,
+      totalCoinsLost: 0,
+      currentStreak: 0,
+      maxStreak: 0,
+    };
+
+    // Weighted emojis to decrease winning odds
+    const weightedEmojis = [
+      '🍒', '🍒', '🍒', '🍒',
+      '🍀', '🍀', '🍀',
+      '🍉', '🍉', '🍉',
+      '🔔', '🔔', '🔔',
+      '🐱', '🐱', '🐱',
+      '💎', '💎',
+      '⭐'
+    ];
+
+    function getRandomEmoji() {
+      return weightedEmojis[Math.floor(Math.random() * weightedEmojis.length)];
+    }
+
+    function checkWin(reels) {
+      const bet = parseInt(betSelect.value);
+      const [r1, r2, r3] = reels;
+
+      if (r1 === '⭐' && r2 === '⭐' && r3 === '⭐') {
+        return { win: true, multiplier: 15, message: 'JACKPOT! 3 Stars! 🎉' };
+      }
+
+      if (r1 === r2 && r2 === r3) {
+        return { win: true, multiplier: 8, message: `3 ${r1} - You win! 🎊` };
+      }
+
+      const counts = {};
+      reels.forEach(e => counts[e] = (counts[e] || 0) + 1);
+      if (counts['⭐'] === 1) {
+        const others = reels.filter(e => e !== '⭐');
+        if (others.length === 2 && others[0] === others[1]) {
+          return { win: true, multiplier: 4, message: '2 same + 1 Star!' };
+        }
+      }
+
+      for (const emoji in counts) {
+        if (counts[emoji] === 2) {
+          return { win: true, multiplier: 2, message: '2 matching emojis! ' };
+        }
+      }
+
+      return { win: false, multiplier: 0, message: 'No win, try again!' };
+    }
+
+    function updateCoins(amount) {
+      coins += amount;
+      coinsInfo.textContent = `Coins: ${coins}`;
+      localStorage.setItem('coins', coins);
+    }
+
+    function updateStats(win, winnings, bet) {
+      stats.totalSpins++;
+      if (win) {
+        stats.totalWins++;
+        stats.totalCoinsWon += winnings;
+        stats.currentStreak++;
+        if (winnings > stats.biggestWin) stats.biggestWin = winnings;
+        if (stats.currentStreak > stats.maxStreak) stats.maxStreak = stats.currentStreak;
+      } else {
+        stats.totalCoinsLost += bet;
+        stats.currentStreak = 0;
+      }
+      localStorage.setItem('stats', JSON.stringify(stats));
+      renderStats();
+    }
+
+    function renderStats() {
+      totalSpinsEl.textContent = stats.totalSpins;
+      totalWinsEl.textContent = stats.totalWins;
+      biggestWinEl.textContent = stats.biggestWin;
+      totalCoinsWonEl.textContent = stats.totalCoinsWon;
+      totalCoinsLostEl.textContent = stats.totalCoinsLost;
+      currentStreakEl.textContent = stats.currentStreak;
+      maxStreakEl.textContent = stats.maxStreak;
+    }
+
+    function showConfetti() {
+      const confettiContainer = document.getElementById('confetti-container');
+      const count = 80;
+      for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * window.innerWidth + 'px';
+        confetti.style.backgroundColor = `hsl(${Math.random() * 60 + 40}, 100%, 60%)`;
+        confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+        confetti.style.opacity = Math.random() + 0.5;
+        confetti.style.width = confetti.style.height = (5 + Math.random() * 10) + 'px';
+        confettiContainer.appendChild(confetti);
+
+        confetti.addEventListener('animationend', () => {
+          confetti.remove();
+        });
+      }
+    }
+
+    function spinReelsAnimation() {
+      reelElements.forEach(reel => reel.classList.add('spin'));
+    }
+
+    function stopReelsAnimation() {
+      reelElements.forEach(reel => reel.classList.remove('spin'));
+    }
+
+    function saveBet() {
+      localStorage.setItem('bet', betSelect.value);
+    }
+
+    betSelect.addEventListener('change', saveBet);
+
+    // Spacebar triggers spin if button enabled
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !spinBtn.disabled) {
+        e.preventDefault();
+        spinBtn.click();
+      }
+    });
+
+    function init() {
+      coinsInfo.textContent = `Coins: ${coins}`;
+      resultInfo.textContent = '';
+      reelElements.forEach(r => r.textContent = '❓');
+      spinBtn.disabled = false;
+      renderStats();
+    }
+
+    spinBtn.addEventListener('click', () => {
+      const bet = parseInt(betSelect.value);
+      if (bet > coins) {
+        resultInfo.textContent = '❌ Not enough coins to bet that amount!';
+        return;
+      }
+
+      updateCoins(-bet);
+      // Fade out old message smoothly
+      resultInfo.classList.add('fade-out');
+
+      setTimeout(() => {
+        resultInfo.classList.remove('fade-out');
+        resultInfo.textContent = '';
+      }, 300);
+
+      spinBtn.disabled = true;
+      spinReelsAnimation();
+
+      let spins = 0;
+      const maxSpins = 20;
+      const spinInterval = 80;
+
+      const interval = setInterval(() => {
+        const spinResult = reelElements.map(() => getRandomEmoji());
+        reelElements.forEach((el, i) => el.textContent = spinResult[i]);
+        spins++;
+
+        if (spins >= maxSpins) {
+          clearInterval(interval);
+          stopReelsAnimation();
+
+          const result = checkWin(spinResult);
+          if (result.win) {
+            const winnings = bet * result.multiplier;
+            updateCoins(winnings);
+            updateStats(true, winnings, bet);
+            resultInfo.textContent = `${result.message} You won ${winnings} coins! 🎉`;
+            showConfetti();
+          } else {
+            updateStats(false, 0, bet);
+            resultInfo.textContent = result.message;
+          }
+          spinBtn.disabled = false;
+
+          if (coins <= 0) {
+            resultInfo.textContent += ' 💥 Game Over! You ran out of coins.';
+            spinBtn.disabled = true;
+          }
+        }
+      }, spinInterval);
+    });
+
+    init();
+  </script>
+
+</body>
+</html>
