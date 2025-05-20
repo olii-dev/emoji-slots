@@ -8,9 +8,24 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
 
+    /* Animated gradient background */
+    @keyframes gradientBG {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
     body {
       font-family: 'Orbitron', monospace, Arial, sans-serif;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      background: linear-gradient(-45deg, #1e3c72, #2a5298, #1e3c72, #2a5298);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
       color: #fff;
       user-select: none;
       margin: 0;
@@ -48,12 +63,15 @@
       background: #121212dd;
       border-radius: 20px;
       padding: 1.5rem 1.2rem;
-      box-shadow: 0 0 30px #ffcc00aa;
       width: 220px;
       font-size: 1.1rem;
       line-height: 1.5;
       user-select: none;
       flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .panel h2 {
@@ -64,22 +82,26 @@
       text-shadow: 0 0 8px #ffcc00;
     }
 
-    /* Slot machine styling */
+    /* Glassmorphism Slot Machine */
     .slot-machine {
-      background: #121212dd;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 20px;
       padding: 2rem 2rem 2.5rem;
-      box-shadow: 0 0 30px #ffcc00aa;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-width: 320px;
+      max-width: 360px;
       user-select: none;
       position: relative;
       z-index: 1;
       flex-shrink: 0;
     }
 
+    /* Reels with subtle 3D and shine */
     .reels {
       display: flex;
       justify-content: center;
@@ -90,23 +112,40 @@
     .reel {
       width: 90px;
       height: 90px;
-      background: #222;
+      background: linear-gradient(145deg, #2e2e2e, #1a1a1a);
       border-radius: 15px;
-      box-shadow: inset 0 0 15px #000;
+      box-shadow: 4px 4px 6px #121212, -4px -4px 6px #3a3a3a;
       font-size: 5rem;
       display: flex;
       justify-content: center;
       align-items: center;
+      position: relative;
+      overflow: hidden;
       transition: transform 0.2s ease;
     }
 
-    .reel.spin {
-      animation: spinAnim 0.3s linear infinite;
+    /* Shine animation on spin */
+    .reel.spin::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(120deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 60%);
+      transform: rotate(25deg);
+      animation: shine 1s linear infinite;
+      pointer-events: none;
+      z-index: 10;
     }
 
-    @keyframes spinAnim {
-      0% { transform: rotateX(0);}
-      100% { transform: rotateX(360deg);}
+    @keyframes shine {
+      0% {
+        transform: translateX(-100%) rotate(25deg);
+      }
+      100% {
+        transform: translateX(100%) rotate(25deg);
+      }
     }
 
     .controls {
@@ -142,7 +181,7 @@
     }
 
     button {
-      background: #ffcc00;
+      background: linear-gradient(45deg, #ffcc00, #e6b800);
       border: none;
       color: #222;
       font-weight: 700;
@@ -150,7 +189,7 @@
       padding: 0.9rem 2.5rem;
       border-radius: 15px;
       cursor: pointer;
-      box-shadow: 0 0 25px #ffcc00;
+      box-shadow: 0 4px 15px rgba(255, 204, 0, 0.7);
       transition: background 0.3s, box-shadow 0.3s;
       user-select: none;
     }
@@ -162,15 +201,24 @@
       color: #555;
     }
 
+    @keyframes glowPulse {
+  0%, 100% { box-shadow: 0 0 10px 3px #ffeb3b; }
+  50% { box-shadow: 0 0 20px 6px #ffeb3b; }
+}
+
+.reel.win {
+  animation: glowPulse 1.5s infinite;
+}
+
     button:hover:not(:disabled) {
-      background: #e6b800;
-      box-shadow: 0 0 35px #ffdb4d;
+      background: linear-gradient(45deg, #ffd633, #ffdb4d);
+      box-shadow: 0 6px 25px rgba(255, 219, 77, 0.9);
     }
 
     .result-info {
       font-size: 16px;
       font-weight: 600;
-      text-shadow: 0 0 5px #000;
+      text-shadow: 0 0 8px #ffcc00;
       margin-bottom: 0.7rem;
       text-align: center;
       color: #ffeb3b;
@@ -190,7 +238,7 @@
       font-size: 1.6rem;
       margin-bottom: 0.5rem;
       color: #ffeb3b;
-      text-shadow: 0 0 10px #ffeb3b;
+      text-shadow: 0 0 15px #ffeb3b;
       user-select: none;
       text-align: center;
     }
@@ -283,7 +331,7 @@
   <div class="game-container">
     <!-- Statistics Panel -->
     <div class="panel" id="statsPanel" aria-label="Game Statistics">
-      <h2>📊 Statistics</h2>
+      <h2>Statistics</h2>
       <p><strong>Total Spins:</strong> <span id="totalSpins">0</span></p>
       <p><strong>Total Wins:</strong> <span id="totalWins">0</span></p>
       <p><strong>Biggest Win:</strong> <span id="biggestWin">0</span> coins</p>
@@ -320,17 +368,16 @@
     </div>
 
     <!-- Winning Odds Panel -->
-    <div class="panel" id="oddsPanel" aria-label="Winning Odds Information">
-      <h2>🎯 Winning Odds</h2>
-      <ul style="list-style: none; padding-left: 0;">
-        <li>⭐ 3 Stars (Jackpot): <strong>15× Bet</strong></li>
-        <li>🍒 / 💎 / 🍀 / 🔔 3 of a kind: <strong>8× Bet</strong></li>
-        <li>2 same + 1 ⭐ Star: <strong>4× Bet</strong></li>
-        <li>2 matching emojis: <strong>2× Bet</strong></li>
-        <li>Other combos: <strong>No win</strong></li>
-      </ul>
-    </div>
-  </div>
+<div class="panel" id="oddsPanel" aria-label="Winning Odds Information">
+  <h2>How it works</h2>
+  <ul style="padding-left: 0; font-size: 1rem; line-height: 1.6;">
+    <li><strong>⭐ Triple Stars (Jackpot):</strong> Hit 3 stars to win <span style="color: #ffeb3b;">15× your bet</span></li>
+    <li><strong>🍒 / 💎 / 🍀 / 🔔 Triple Match:</strong> 3 identical emojis pay <span style="color: #ffeb3b;">8× your bet</span></li>
+    <li><strong>2 identical emojis + 1 ⭐ Star:</strong> Pays <span style="color: #ffeb3b;">4× your bet</span></li>
+    <li><strong>2 matching emojis:</strong> Pays <span style="color: #ffeb3b;">2× your bet</span></li>
+    <li><strong>All other combinations:</strong> No payout</li>
+  </ul>
+</div>
 
   <div id="confetti-container"></div>
 
@@ -452,24 +499,25 @@
       maxStreakEl.textContent = stats.maxStreak;
     }
 
-    function showConfetti() {
-      const confettiContainer = document.getElementById('confetti-container');
-      const count = 80;
-      for (let i = 0; i < count; i++) {
-        const confetti = document.createElement('div');
-        confetti.classList.add('confetti');
-        confetti.style.left = Math.random() * window.innerWidth + 'px';
-        confetti.style.backgroundColor = `hsl(${Math.random() * 60 + 40}, 100%, 60%)`;
-        confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
-        confetti.style.opacity = Math.random() + 0.5;
-        confetti.style.width = confetti.style.height = (5 + Math.random() * 10) + 'px';
-        confettiContainer.appendChild(confetti);
+function showConfetti() {
+  const confettiContainer = document.getElementById('confetti-container');
+  const count = 80;
+  for (let i = 0; i < count; i++) {
+    const confetti = document.createElement('div');
+    confetti.classList.add('confetti');
+    confetti.style.left = Math.random() * window.innerWidth + 'px';
+    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 70%, 60%)`;
+    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+    confetti.style.opacity = Math.random() + 0.5;
+    confetti.style.width = confetti.style.height = (5 + Math.random() * 10) + 'px';
+    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+    confettiContainer.appendChild(confetti);
 
-        confetti.addEventListener('animationend', () => {
-          confetti.remove();
-        });
-      }
-    }
+    confetti.addEventListener('animationend', () => {
+      confetti.remove();
+    });
+  }
+}
 
     function spinReelsAnimation() {
       reelElements.forEach(reel => reel.classList.add('spin'));
